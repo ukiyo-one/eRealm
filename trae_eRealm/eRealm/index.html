@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eRealm Travel Guide</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+    <div id="container"></div>
+
+    <!-- 初始菜单栏 -->
+    <div id="menu" class="menu-active">
+        <div class="menu-header">
+            <h1>eRealm Travel Guide</h1>
+            <p class="welcome-text">Welcome to eRealm! :-)</p>
+        </div>
+        <div class="menu-scroll-container">
+            <div class="menu-scroll-content">
+                <p class="select-text">Select your destination</p>
+                <div id="menu-buttons">
+                    <button class="menu-btn" data-scene="corridor">Corridor</button>
+                    <button class="menu-btn" data-scene="sea">Sea</button>
+                    <button class="menu-btn" data-scene="gallery">Flower Gallery</button>
+                    <button class="menu-btn" data-scene="stairs">Stairs</button>
+                </div>
+                <div class="rules">
+                    <h3>Safety Rules</h3>
+                    <ul>
+                        <li>Pay attention to your surroundings</li>
+                        <li>Trust your instincts</li>
+                        <li>Some areas may be unstable</li>
+                        <li>Respect the environment</li>
+                    </ul>
+                </div>
+                <div class="note">
+                    <p>Note: Keep yourself safe and enjoy your trip! :-D</p>
+                </div>
+            </div>
+        </div>
+        <!-- 滚动指示器 -->
+        <div class="scroll-indicator">
+            <div class="scroll-bar"></div>
+        </div>
+    </div>
+
+    <!-- 游戏UI -->
+    <div id="ui" class="hidden">
+        <!-- 左上角菜单按钮 -->
+        <div id="menu-toggle" class="menu-toggle">
+            <div class="toggle-icon"></div>
+        </div>
+
+        <!-- 侧边菜单 -->
+        <div id="side-menu" class="side-menu">
+            <div class="side-menu-header">
+                <h2>Menu</h2>
+            </div>
+            <div class="side-menu-content">
+                <button id="return-btn" class="side-menu-btn">Return</button>
+                <div class="mouse-effect-options">
+                    <label>
+                        <input type="checkbox" id="toggle-mouse-effect" checked>
+                        <span>Show Mouse Effect</span>
+                    </label>
+                    <div class="slider-container">
+                        <label for="mouse-effect-size">Mouse Effect Size:</label>
+                        <input type="range" id="mouse-effect-size" min="20" max="200" value="40">
+                    </div>
+                </div>
+                <div class="instructions">
+                    <h3>How to Play</h3>
+                    <ul>
+                        <li>Move mouse to control view</li>
+                        <li>WASD/Arrow keys to move</li>
+                        <li>Click to explore hidden elements</li>
+                        <li>Press ESC to return to menu</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="header">
+            <h1>eRealm Travel Guide</h1>
+        </div>
+        <div id="scene-info">
+            <h3 id="scene-name">Free Explore</h3>
+            <p id="scene-description">Explore random locations in eRealm</p>
+        </div>
+    </div>
+
+    <!-- 模块化脚本引入 -->
+    <script src="src/utils/eventBus.js"></script>
+    <script src="src/managers/backgroundEffectManager.js"></script>
+    <script src="src/managers/sceneManager.js"></script>
+    <script src="src/managers/uiManager.js"></script>
+    <script src="src/scenes/corridorScene.js"></script>
+    <script src="src/scenes/seaScene.js"></script>
+    <script src="src/scenes/flowerGalleryScene.js"></script>
+    <script src="src/scenes/stairsScene.js"></script>
+    <script src="src/main.js"></script>
+</body>
+
+</html>
