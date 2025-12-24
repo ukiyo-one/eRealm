@@ -1,0 +1,455 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: #000000;
+    color: #ffffff;
+    overflow: hidden;
+    cursor: crosshair;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* 背景网格效果 */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 1;
+    transition: transform 0.2s ease;
+}
+
+/* 鼠标悬停时网格变形效果 */
+body:hover::before {
+    transform: scale(1.05) rotate(1deg);
+}
+
+/* 噪点效果 */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* 3D场景容器 */
+#container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+}
+
+/* 鼠标光效基础变量 */
+:root {
+    --light-color-1: rgba(180, 255, 220, 0.6);
+    --light-color-2: rgba(100, 200, 255, 0.3);
+    --light-blur: 15px;
+    --light-size: 100px;
+}
+
+/* 鼠标光效 */
+#mouse-light {
+    position: fixed;
+    width: var(--light-size);
+    height: var(--light-size);
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--light-color-1) 0%, var(--light-color-2) 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 9;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s ease, height 0.3s ease, opacity 0.3s ease;
+    filter: blur(var(--light-blur));
+    opacity: 1;
+}
+
+/* 鼠标光效隐藏状态 */
+#mouse-light.hidden {
+    opacity: 0;
+}
+
+/* 鼠标轨迹容器 */
+#mouse-trail {
+    position: fixed;
+    pointer-events: none;
+    z-index: 8;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* 鼠标轨迹元素 */
+.mouse-trail {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--light-color-1) 0%, var(--light-color-2) 50%, transparent 100%);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    filter: blur(var(--light-blur));
+    opacity: 1;
+    transition: width 0.1s ease-out, height 0.1s ease-out, opacity 0.1s ease-out, filter 0.1s ease-out;
+    will-change: transform, width, height, opacity, filter;
+    left: 0;
+    top: 0;
+}
+
+/* 主菜单UI容器 */
+.ui-container {
+    position: relative;
+    padding: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(180, 255, 220, 0.5);
+    border-radius: 0;
+    backdrop-filter: blur(10px);
+    text-align: center;
+    z-index: 10;
+    max-width: 80%;
+    box-shadow: 0 0 30px rgba(100, 200, 255, 0.3);
+    animation: fadeIn 1s ease-in-out;
+    opacity: 1;
+    transition: opacity 0.5s ease, transform 0.5s ease, visibility 0.5s ease;
+    visibility: visible;
+    width: auto;
+    height: auto;
+    margin: auto;
+}
+
+/* 主菜单隐藏状态 */
+.ui-container.hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    visibility: hidden;
+}
+
+.ui-container h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(180, 255, 220, 0.8);
+    letter-spacing: 3px;
+    animation: float 3s ease-in-out infinite;
+    transform: translateY(0);
+    /* 重置transform，避免影响父容器的居中 */
+}
+
+.ui-container p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #cccccc;
+    text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
+}
+
+.safety-note {
+    margin-top: 30px !important;
+    font-size: 0.9rem !important;
+    color: #999999 !important;
+}
+
+/* 场景按钮容器 */
+#scene-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin: 30px 0;
+    align-items: center;
+}
+
+/* 场景按钮样式 */
+.scene-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    border: 2px solid rgba(180, 255, 220, 0.6);
+    padding: 12px 30px;
+    font-size: 1.1rem;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0;
+    backdrop-filter: blur(5px);
+    min-width: 200px;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+}
+
+.scene-btn:hover {
+    background: rgba(100, 200, 255, 0.2);
+    border-color: rgba(180, 255, 220, 1);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+    transform: translateY(-2px);
+}
+
+.scene-btn:active {
+    transform: translateY(0);
+}
+
+/* 场景内左上角菜单容器 */
+.scene-menu-container {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 100;
+    display: none;
+}
+
+/* 菜单按钮 */
+.menu-toggle {
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(180, 255, 220, 0.5);
+    color: #ffffff;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    z-index: 101;
+}
+
+.menu-toggle:hover {
+    background: rgba(100, 200, 255, 0.3);
+    border-color: rgba(180, 255, 220, 1);
+    box-shadow: 0 0 15px rgba(100, 200, 255, 0.5);
+}
+
+/* 展开后的菜单内容 */
+.menu-content {
+    position: absolute;
+    top: 0;
+    left: 40px;
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid rgba(180, 255, 220, 0.5);
+    padding: 20px;
+    min-width: 300px;
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(-20px);
+    transition: all 0.3s ease;
+    z-index: 100;
+}
+
+/* 菜单展开状态 */
+.menu-content.expanded {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* 菜单头部 */
+.menu-header {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(180, 255, 220, 0.3);
+}
+
+/* 菜单按钮 */
+.menu-btn {
+    background: rgba(0, 0, 0, 0.6);
+    color: #ffffff;
+    border: 1px solid rgba(180, 255, 220, 0.5);
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0;
+    backdrop-filter: blur(5px);
+}
+
+.menu-btn:hover {
+    background: rgba(100, 200, 255, 0.2);
+    border-color: rgba(180, 255, 220, 1);
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.3);
+}
+
+/* 光效大小滑块 */
+.light-slider {
+    width: 100%;
+    margin-top: 5px;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 5px;
+    background: rgba(0, 0, 0, 0.6);
+    outline: none;
+    border: 1px solid rgba(180, 255, 220, 0.5);
+}
+
+.light-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 15px;
+    height: 15px;
+    background: rgba(180, 255, 220, 0.8);
+    cursor: pointer;
+    border: 1px solid rgba(100, 200, 255, 1);
+}
+
+.light-slider::-moz-range-thumb {
+    width: 15px;
+    height: 15px;
+    background: rgba(180, 255, 220, 0.8);
+    cursor: pointer;
+    border: 1px solid rgba(100, 200, 255, 1);
+}
+
+/* 菜单使用说明 */
+.menu-instructions {
+    color: #cccccc;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.menu-instructions h3 {
+    color: rgba(180, 255, 220, 0.8);
+    margin-bottom: 10px;
+    font-size: 1rem;
+}
+
+.menu-instructions p {
+    margin: 5px 0;
+}
+
+/* 动画效果 */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .ui-container {
+        padding: 20px;
+        max-width: 90%;
+    }
+
+    .ui-container h1 {
+        font-size: 1.8rem;
+    }
+
+    .ui-container p {
+        font-size: 1rem;
+    }
+
+    .scene-btn {
+        padding: 10px 20px;
+        font-size: 1rem;
+        min-width: 150px;
+    }
+
+    .menu-content {
+        min-width: 250px;
+        padding: 15px;
+        left: 35px;
+    }
+
+    .menu-toggle {
+        width: 35px;
+        height: 35px;
+        font-size: 1.2rem;
+    }
+
+    #mouse-light {
+        width: 80px;
+        height: 80px;
+        filter: blur(10px);
+    }
+}
+
+/* 隐藏状态 */
+.hidden {
+    display: none !important;
+}
+
+/* 显示状态 */
+.visible {
+    display: block !important;
+}
+
+/* 重新显示菜单按钮 */
+.show-menu-btn {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    border: 2px solid rgba(180, 255, 220, 0.6);
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 0;
+    backdrop-filter: blur(10px);
+    z-index: 11;
+    opacity: 0;
+    visibility: hidden;
+    box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+}
+
+/* 重新显示按钮可见状态 */
+.show-menu-btn.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* 重新显示按钮悬停效果 */
+.show-menu-btn:hover {
+    background: rgba(100, 200, 255, 0.2);
+    border-color: rgba(180, 255, 220, 1);
+    box-shadow: 0 0 20px rgba(100, 200, 255, 0.5);
+    transform: translateX(-50%) translateY(-2px);
+}
+
+/* 重新显示按钮点击效果 */
+.show-menu-btn:active {
+    transform: translateX(-50%) translateY(0);
+}
